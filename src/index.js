@@ -1,6 +1,9 @@
-function createStore(reducer) {
+function createStore(reducer, enhancer) {
   var state = null;
   var listeners = [];
+  if (enhancer) {
+    return enhancer(createStore(reducer));
+  }
 
   function getState() {
     return state || 0;
@@ -20,4 +23,14 @@ function createStore(reducer) {
     subscribe,
     dispatch,
   };
+}
+
+// return (store) => new store
+function applyMiddleware(middleware) {
+  return (store) => {    
+    let dispatch = store.dispatch;
+    dispatch = middleware(store)(dispatch);    
+    store.dispatch = dispatch;
+    return store;
+  }
 }
