@@ -36,7 +36,15 @@
           return ret;
         }
       }
-      var store = createStore(counter, applyMiddleware(logger()));
+      function timer() {
+        return store => dispatch => action => {
+          console.log('timer start');
+          const ret = dispatch(action);    
+          console.log('timer', new Date());      
+          return ret;
+        }
+      }
+      var store = createStore(counter, applyMiddleware([logger(), timer()]));
       var valueEl = document.getElementById('value')
       function render() {
         valueEl.innerHTML = store.getState().toString()

@@ -26,10 +26,14 @@ function createStore(reducer, enhancer) {
 }
 
 // return (store) => new store
-function applyMiddleware(middleware) {
-  return (store) => {    
-    let dispatch = store.dispatch;
-    dispatch = middleware(store)(dispatch);    
+function applyMiddleware(middlewares) {
+  return (store) => {
+    const mids = middlewares.map(m => m(store));
+    mids.reverse();
+    let dispatch = mids.reduce(
+      (dis, mid) => mid(dis),
+      store.dispatch
+    );
     store.dispatch = dispatch;
     return store;
   }
