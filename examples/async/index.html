@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Redux basic example</title>
-    <script src="../../src/index.js"></script>
+    <script src="../../dist/redux.js"></script>
   </head>
   <body>
     <div>
@@ -39,12 +39,12 @@
       function timer() {
         return store => dispatch => action => {
           console.log('timer start');
-          const ret = dispatch(action);    
-          console.log('timer', new Date());      
+          const ret = dispatch(action);
+          console.log('timer', new Date());
           return ret;
         }
       }
-      var store = createStore(counter, applyMiddleware([logger(), timer()]));
+      var store = Redux.createStore(counter, Redux.applyMiddleware([logger(), timer()]));
       var valueEl = document.getElementById('value')
       function render() {
         valueEl.innerHTML = store.getState().toString()

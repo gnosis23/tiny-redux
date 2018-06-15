@@ -38,3 +38,8 @@ function applyMiddleware(middlewares) {
     return store;
   }
 }
+
+export {
+  createStore,
+  applyMiddleware,
+}
