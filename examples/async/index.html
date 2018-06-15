@@ -44,7 +44,7 @@
           return ret;
         }
       }
-      var store = Redux.createStore(counter, Redux.applyMiddleware([logger(), timer()]));
+      var store = Redux.createStore(counter, Redux.applyMiddleware(logger(), timer()));
       var valueEl = document.getElementById('value')
       function render() {
         valueEl.innerHTML = store.getState().toString()
