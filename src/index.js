@@ -1,6 +1,6 @@
 function createStore(reducer, enhancer) {
-  var state = null;
-  var listeners = [];
+  let state = null;
+  let listeners = [];
   if (enhancer) {
     return enhancer(createStore(reducer));
   }
@@ -30,11 +30,10 @@ function applyMiddleware(middlewares) {
   return (store) => {
     const mids = middlewares.map(m => m(store));
     mids.reverse();
-    let dispatch = mids.reduce(
+    store.dispatch = mids.reduce(
       (dis, mid) => mid(dis),
       store.dispatch
     );
-    store.dispatch = dispatch;
     return store;
   }
 }
