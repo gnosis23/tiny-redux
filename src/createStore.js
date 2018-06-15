@@ -2,7 +2,7 @@ export default function createStore(reducer, enhancer) {
   let state = null;
   let listeners = [];
   if (enhancer) {
-    return enhancer(createStore(reducer));
+    return enhancer(createStore)(reducer);
   }
 
   function getState() {
