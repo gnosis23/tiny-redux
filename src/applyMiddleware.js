@@ -1,3 +1,5 @@
+import compose from './compose';
+
 // return (store) => new store
 export default function applyMiddleware(...middlewares) {
   return createStore => (...args) => {
@@ -16,15 +18,8 @@ export default function applyMiddleware(...middlewares) {
       dispatch: (...args) => dispatch(...args)
     };
 
-    // soft copy
-    middlewares = middlewares.slice();
-    middlewares.reverse();
-
-    const mids = middlewares.map(m => m(middlewareAPI));
-    dispatch = mids.reduce(
-      (dis, mid) => mid(dis),
-      store.dispatch
-    );
+    const chain = middlewares.map(middleware => middleware(middlewareAPI));
+    dispatch = compose(...chain)(store.dispatch);
 
     return {
       ...store,
