@@ -1,11 +1,25 @@
 import ActionTypes from './utils/actionTypes';
 
-export default function createStore(reducer, enhancer) {
-  let state = undefined;
-  let listeners = [];
-  if (enhancer) {
-    return enhancer(createStore)(reducer);
+export default function createStore(reducer, preloadedState, enhancer) {
+  if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
+    enhancer = preloadedState;
+    preloadedState = undefined;
   }
+
+  if (typeof enhancer !== 'undefined') {
+    if (typeof enhancer !== 'function') {
+      throw new Error('Expected then enhancer to be a function.');
+    }
+
+    return enhancer(createStore)(reducer, preloadedState);
+  }
+
+  if (typeof(reducer) !== 'function') {
+    throw new Error('reducer is not a function');
+  }
+
+  let state = preloadedState;
+  let listeners = [];
 
   function getState() {
     return state;
@@ -13,6 +27,9 @@ export default function createStore(reducer, enhancer) {
 
   function subscribe(listener) {
     listeners.push(listener);
+    return () => {
+      listeners = listeners.filter(func => func !== listener);
+    }
   }
 
   function dispatch(action) {

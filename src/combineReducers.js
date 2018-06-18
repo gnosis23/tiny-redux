@@ -14,17 +14,20 @@ export default function combineReducers(reducerObject) {
     console.error(`No reducer provided for key "${missedReducer}"`);
   }
 
-  return (store, action) => {
+  return (store = {}, action) => {
     const nextStore = {};
     Object.keys(reducerObject).forEach(key => {
-      if (reducerObject[key]) {
+      const func = reducerObject[key];
+      if (func) {
         if (action === null) {
           throw new Error(`"${key}" not an action`);
         }
         if (action.type === undefined) {
           throw new Error(`"${key}" not an action`);
         }
-        const value = reducerObject[key](store[key], action);
+
+
+        const value = typeof(func)==='function' && func(store[key], action);
         if (value === undefined) {
           throw new Error(`"${action.type}" gets undefined for key "${key}"`);
         }
