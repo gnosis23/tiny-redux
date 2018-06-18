@@ -5,8 +5,8 @@ import {
   dispatchInMiddle,
   getStateInMiddle,
   subscribeInMiddle,
-  unsubscribeInMiddle,
-  unknownAction
+  unknownAction,
+  unsubscribeInMiddle
 } from './helpers/actionCreators';
 // import * as Rx from 'rxjs'
 // import $$observable from 'symbol-observable'
@@ -411,5 +411,119 @@ describe('createStore', () => {
       ).toThrow(/You may not unsubscribe from a store/);
     });
 
+  it('throws if action type is missing', () => {
+    const store = createStore(reducers.todos);
+    expect(() => store.dispatch({})).toThrow(
+      /Actions may not have an undefined "type" property/
+    );
+  });
 
+  it('throws if action type is undefined', () => {
+    const store = createStore(reducers.todos);
+    expect(() => store.dispatch({type: undefined})).toThrow(
+      /Actions may not have an undefined "type" property/
+    );
+  });
+
+  it('does not throw if action type is falsy', () => {
+    const store = createStore(reducers.todos);
+    expect(() => store.dispatch({type: false})).not.toThrow();
+    expect(() => store.dispatch({type: 0})).not.toThrow();
+    expect(() => store.dispatch({type: null})).not.toThrow();
+    expect(() => store.dispatch({type: ''})).not.toThrow();
+  });
+
+  it('accepts enhancer as the third argument', () => {
+    const emptyArray = [];
+    const spyEnhancer = vanillaCreateStore => (...args) => {
+      expect(args[0]).toBe(reducers.todos);
+      expect(args[1]).toBe(emptyArray);
+      expect(args.length).toBe(2);
+      const vanillaStore = vanillaCreateStore(...args);
+      return {
+        ...vanillaStore,
+        dispatch: jest.fn(vanillaStore.dispatch)
+      };
+    };
+
+    const store = createStore(reducers.todos, emptyArray, spyEnhancer);
+    const action = addTodo('Hello');
+    store.dispatch(action);
+    expect(store.dispatch).toBeCalledWith(action);
+    expect(store.getState()).toEqual([
+      {
+        id: 1,
+        text: 'Hello'
+      }
+    ]);
+  });
+
+  it('accepts enhancer as the second argument if initial state is missing',
+    () => {
+      const spyEnhancer = vanillaCreateStore => (...args) => {
+        expect(args[0]).toBe(reducers.todos);
+        expect(args[1]).toBe(undefined);
+        expect(args.length).toBe(2);
+        const vanillaStore = vanillaCreateStore(...args);
+        return {
+          ...vanillaStore,
+          dispatch: jest.fn(vanillaStore.dispatch)
+        };
+      };
+
+      const store = createStore(reducers.todos, spyEnhancer);
+      const action = addTodo('Hello');
+      store.dispatch(action);
+      expect(store.dispatch).toBeCalledWith(action);
+      expect(store.getState()).toEqual([
+        {
+          id: 1,
+          text: 'Hello'
+        }
+      ]);
+    });
+
+  it('throws if enhancer is neither undefined nor a function', () => {
+    expect(() => createStore(reducers.todos, undefined, {})).toThrow();
+
+    expect(() => createStore(reducers.todos, undefined, [])).toThrow();
+
+    expect(() => createStore(reducers.todos, undefined, null)).toThrow();
+
+    expect(() => createStore(reducers.todos, undefined, false)).toThrow();
+
+    expect(() =>
+      createStore(reducers.todos, undefined, undefined)
+    ).not.toThrow();
+
+    expect(() => createStore(reducers.todos, undefined, x => x)).not.toThrow();
+
+    expect(() => createStore(reducers.todos, x => x)).not.toThrow();
+
+    expect(() => createStore(reducers.todos, [])).not.toThrow();
+
+    expect(() => createStore(reducers.todos, {})).not.toThrow();
+  });
+
+  // it('throws if nextReducer is not a function', () => {
+  //   const store = createStore(reducers.todos);
+  //
+  //   expect(() => store.replaceReducer()).toThrow(
+  //     'Expected the nextReducer to be a function.'
+  //   );
+  //
+  //   expect(() => store.replaceReducer(() => {})).not.toThrow();
+  // });
+
+  it('throws if listener is not a function', () => {
+    const store = createStore(reducers.todos);
+
+    expect(() => store.subscribe()).toThrow();
+
+    expect(() => store.subscribe('')).toThrow();
+
+    expect(() => store.subscribe(null)).toThrow();
+
+    expect(() => store.subscribe(undefined)).toThrow();
+  });
 });
